@@ -59,7 +59,7 @@ function responseFor(request: NextRequest, status: number, payload: Record<strin
   } else {
     const shareUrl = escapeHtml(String(payload.shareUrl));
     const secret = escapeHtml(String(payload.deletionSecret));
-    response = new NextResponse(documentShell("Plan saved", `<p class="eyebrow">Plan saved</p><h1>Keep both parts.</h1><p>Anyone with the share link can read this plan. The deletion secret is shown once in this response and is also held in this browser. It cannot be recovered or re-sent.</p><label>Share link<textarea readonly rows="3">${shareUrl}</textarea></label><label>Deletion secret · shown once<textarea readonly rows="3">${secret}</textarea></label><p><a class="button" href="${shareUrl}">Open saved plan</a></p>`), { status: 201, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+    response = new NextResponse(documentShell("Plan saved", `<p class="eyebrow">Plan saved</p><h1>Keep both parts.</h1><p>Anyone with the share link can read this plan. The deletion secret is shown once in this response and is also held in this browser. It cannot be recovered or re-sent.</p><label>Share link<textarea readonly rows="4">${shareUrl}</textarea></label><label>Deletion secret · shown once<textarea readonly rows="3">${secret}</textarea></label><p><a class="button" href="${shareUrl}">Open saved plan</a></p>`), { status: 201, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   }
   if (browserCookie) response.cookies.set(browserCookieName, browserCookie, { ...baseCookieOptions, path: "/", maxAge: 3_600 });
   return response;
