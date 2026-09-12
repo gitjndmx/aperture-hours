@@ -219,8 +219,12 @@ test.describe("acceptance matrix", () => {
       await expect(page.locator("footer")).toContainText("not a guarantee");
       await expect(page.locator("footer")).toContainText("Open-Meteo");
       await expect(page.getByRole("link", { name: "Report a problem" })).toBeVisible();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
-      expect(await page.locator("textarea").nth(0).evaluate((node) => node.scrollHeight - node.clientHeight)).toBeLessThanOrEqual(2);
+      for (const width of [390, 320]) {
+        await page.setViewportSize({ width, height: 844 });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+        expect(await page.locator("textarea").evaluateAll((nodes) => nodes.every((node) => node.scrollHeight - node.clientHeight <= 2))).toBe(true);
+      }
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({ path: path.join(captureRoot, "chromium-nojs-save-success-390.png") });
       await page.locator("footer").scrollIntoViewIfNeeded();
