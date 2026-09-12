@@ -113,6 +113,10 @@ const metadataAudit = {
   jsonLdPresent: /application\/ld\+json/i.test(homeHtml),
   routeMetadata: metadataRoutes,
   savedPlanAudited: Boolean(savedPlanUrl),
+  savedPlanLifecycle: savedPlanUrl ? {
+    purpose: "Created only for metadata and Lighthouse evidence.",
+    afterCapture: "Deleted through the authorized production route; a subsequent 404 is recorded in deployment.json."
+  } : null,
   robots: { status: robotsResponse.status, body: robotsBody },
   sitemap: { status: sitemapResponse.status, body: await sitemapResponse.text() }
 };

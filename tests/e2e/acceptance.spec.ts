@@ -60,6 +60,12 @@ test.describe("acceptance matrix", () => {
     await page.locator("html").evaluate((node) => { (node as HTMLElement).style.fontSize = "200%"; });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
     await page.screenshot({ path: path.join(captureRoot, `${browserName}-text-scale-200.png`), fullPage: true });
+    for (const width of [390, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(await page.evaluate(() => [...document.querySelectorAll<HTMLElement>(".now-label")]
+        .filter((node) => getComputedStyle(node).display !== "none")
+        .every((node) => node.scrollWidth - node.clientWidth <= 1)), `${browserName} ${width}px at 200% text`).toBe(true);
+    }
   });
 
   test("motion defaults on despite OS preference and explicit off is complete", async ({ page }) => {
@@ -215,6 +221,8 @@ test.describe("acceptance matrix", () => {
       await expect(page.getByRole("link", { name: "Report a problem" })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
       expect(await page.locator("textarea").nth(0).evaluate((node) => node.scrollHeight - node.clientHeight)).toBeLessThanOrEqual(2);
+      const fullHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+      await page.setViewportSize({ width: 390, height: fullHeight });
       await page.screenshot({ path: path.join(captureRoot, "chromium-nojs-save-success-390.png"), fullPage: true });
     } finally {
       const cleanup = await context.request.post(`/plans/${id}/delete/action`, {

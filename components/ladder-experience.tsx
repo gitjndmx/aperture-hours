@@ -51,7 +51,7 @@ type NowMarker = { position: number; label: string; advancing: boolean };
 function WindowStrip({ window, marker, compact = false }: { window: WindowReading; marker?: NowMarker; compact?: boolean }) {
   const cloud = window.means.cloudCover;
   return (
-    <div className="window-strip" style={stripStyle(window)} role="img" aria-label={`Code-authored daylight strip. Mean cloud cover ${cloud === null ? "not returned" : `${Math.round(cloud)} percent`}.`}>
+    <div className="window-strip" data-compact={compact || undefined} style={stripStyle(window)} role="img" aria-label={`Code-authored daylight strip. Mean cloud cover ${cloud === null ? "not returned" : `${Math.round(cloud)} percent`}.`}>
       {marker && (
         <>
         <span
@@ -60,11 +60,16 @@ function WindowStrip({ window, marker, compact = false }: { window: WindowReadin
           aria-hidden="true"
         />
         <span
-          className="now-label"
+          className="now-label now-label-full"
           data-edge={marker.position > 70 ? "right" : "left"}
           style={{ "--now": `${marker.position}%` } as React.CSSProperties}
           aria-hidden="true"
-        >{compact ? marker.label.split(" ")[0] : marker.label}{marker.advancing ? " · live" : compact ? " · static" : " · static, not advancing"}</span>
+        >{marker.label}{marker.advancing ? " · live" : " · static, not advancing"}</span>
+        <span
+          className="now-label now-label-compact"
+          style={{ "--now": `${marker.position}%` } as React.CSSProperties}
+          aria-hidden="true"
+        >{marker.label.split(" ")[0]}{marker.advancing ? " · live" : " · static"}</span>
         </>
       )}
       <span className="strip-text">Cloud {cloud === null ? "not returned" : `${Math.round(cloud)}%`}</span>
