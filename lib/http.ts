@@ -9,7 +9,10 @@ export class UpstreamError extends Error {
 
 export async function boundedJson<T>(url: URL, maximumBytes: number, revalidate: number): Promise<T> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8_000);
+  // Cold serverless connections to the public forecast endpoint can exceed
+  // eight seconds even when the source responds successfully. Keep the guard
+  // well below the hosting limit while allowing a measured cold fetch.
+  const timer = setTimeout(() => controller.abort(), 20_000);
   try {
     const response = await fetch(url, {
       signal: controller.signal,
