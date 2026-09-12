@@ -221,9 +221,10 @@ test.describe("acceptance matrix", () => {
       await expect(page.getByRole("link", { name: "Report a problem" })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
       expect(await page.locator("textarea").nth(0).evaluate((node) => node.scrollHeight - node.clientHeight)).toBeLessThanOrEqual(2);
-      const fullHeight = await page.evaluate(() => document.documentElement.scrollHeight);
-      await page.setViewportSize({ width: 390, height: fullHeight });
-      await page.screenshot({ path: path.join(captureRoot, "chromium-nojs-save-success-390.png"), fullPage: true });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({ path: path.join(captureRoot, "chromium-nojs-save-success-390.png") });
+      await page.locator("footer").scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(captureRoot, "chromium-nojs-save-footer-390.png") });
     } finally {
       const cleanup = await context.request.post(`/plans/${id}/delete/action`, {
         headers: {
