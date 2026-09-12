@@ -126,7 +126,8 @@ test.describe("acceptance matrix", () => {
     test.skip(browserName !== "chromium", "The write-boundary proof runs once; rendering coverage is cross-engine.");
     await openPortland(page);
     const valid = await saveFormValues(page);
-    const headers = { Origin: "http://127.0.0.1:3010", "Sec-Fetch-Site": "same-origin", Accept: "application/json" };
+    const origin = new URL(process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3010").origin;
+    const headers = { Origin: origin, "Sec-Fetch-Site": "same-origin", Accept: "application/json" };
     const crossOrigin = await page.request.post("/api/plans", { form: valid, headers: { ...headers, Origin: "https://example.com", "Sec-Fetch-Site": "cross-site" } });
     expect(crossOrigin.status()).toBe(403);
     const honeypot = await page.request.post("/api/plans", { form: { ...valid, website: "filled" }, headers });
@@ -166,9 +167,17 @@ test.describe("acceptance matrix", () => {
     expect(authorityHeader).toMatch(/; HttpOnly; SameSite=lax/i);
     if (process.env.EXPECT_SECURE_COOKIE === "1") expect(authorityHeader).toContain("; Secure;");
     else expect(authorityHeader).not.toContain("; Secure;");
-    await page.context().addCookies([{ name: `ah_delete_${id}`, value: firstBody.deletionSecret, domain: "127.0.0.1", path: `/plans/${id}`, httpOnly: true, secure: true, sameSite: "Lax" }]);
-    await page.goto("http://localhost:3010/");
-    await page.setContent(`<a href="${firstBody.shareUrl}">Open plan from another site</a>`);
+    await page.context().addCookies([{
+      name: `ah_delete_${id}`,
+      value: firstBody.deletionSecret,
+      domain: new URL(origin).hostname,
+      path: `/plans/${id}`,
+      httpOnly: true,
+      secure: origin.startsWith("https:"),
+      sameSite: "Lax"
+    }]);
+    const crossSiteDocument = `<a href="${firstBody.shareUrl}">Open plan from another site</a>`;
+    await page.goto(`data:text/html;charset=utf-8,${encodeURIComponent(crossSiteDocument)}`);
     await page.getByRole("link", { name: "Open plan from another site" }).click();
     await expect(page.getByRole("link", { name: "Delete this plan" })).toBeVisible();
     expect(await page.evaluate(() => document.cookie)).not.toContain(firstBody.deletionSecret);
