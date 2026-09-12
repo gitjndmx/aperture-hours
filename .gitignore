@@ -9,3 +9,4 @@ reports/sbom.json
 *.tsbuildinfo
 .vercel/
 .vercel
+.audit-plan.json

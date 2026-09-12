@@ -7,6 +7,7 @@ import { CopyLink } from "@/components/copy-link";
 import { CurrentComparison, SnapshotView } from "@/components/snapshot-view";
 import { activityLabels } from "@/lib/constants";
 import { deletionCookieName } from "@/lib/cookies";
+import { UpstreamError } from "@/lib/http";
 import { getForecast } from "@/lib/open-meteo";
 import { getPlanStore } from "@/lib/store";
 
@@ -46,11 +47,11 @@ export default async function SharedPlan({ params, searchParams }: { params: Pro
   const protocol = headerStore.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const shareUrl = `${protocol}://${host}/plans/${id}`;
   let current = null;
-  let comparisonError = false;
+  let comparisonError: "timeout" | "oversize" | "upstream" | null = null;
   if (compare === "1") {
-    try { current = await getForecast(plan.place); } catch { comparisonError = true; }
+    try { current = await getForecast(plan.place); } catch (cause) { comparisonError = cause instanceof UpstreamError ? cause.kind : "upstream"; }
   } else if (compare === "error" && process.env.NODE_ENV !== "production" && process.env.ALLOW_TEST_FIXTURES === "1") {
-    comparisonError = true;
+    comparisonError = "upstream";
   }
 
   return (
@@ -65,7 +66,7 @@ export default async function SharedPlan({ params, searchParams }: { params: Pro
         <form method="get"><input type="hidden" name="compare" value="1" /><button className="primary-button" type="submit">Compare current forecast</button></form>
       </section>
       {current && <CurrentComparison forecast={current} plan={plan} />}
-      {comparisonError && <section className="comparison-block form-error" role="alert"><p className="eyebrow">Current forecast unavailable</p><h2>The saved snapshot is unchanged.</h2><p>Open-Meteo did not respond in time. No current values are shown. Try the comparison again in a moment.</p></section>}
+      {comparisonError && <section className="comparison-block form-error" role="alert"><p className="eyebrow">Current forecast unavailable</p><h2>The saved snapshot is unchanged.</h2><p>{comparisonError === "timeout" ? "The current forecast request took too long and was stopped." : comparisonError === "oversize" ? "The current forecast response was larger than expected and was rejected." : "Open-Meteo did not return a usable current response."} No current values are shown. Try the comparison again in a moment.</p></section>}
       <section className="delete-entry">
         <p className="eyebrow">Deletion</p>
         {hasAuthority ? <><h2>This browser holds the deletion authority.</h2><p>The next page explains the permanent result before anything changes.</p><Link className="secondary-button" href={`/plans/${id}/delete`}>Delete this plan</Link></> : <><h2>Self-service deletion is unavailable here.</h2><p>This browser does not hold the deletion secret for this plan. The secret is shown once and kept only in the browser that created the plan — the server stores only a hash, so it cannot be recovered or re-sent. This plan becomes unavailable after 30 days and is removed by the next daily cleanup.</p></>}

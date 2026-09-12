@@ -52,6 +52,8 @@ test.describe("acceptance matrix", () => {
       expect(geometry.duplicateIds).toEqual([]);
       expect(geometry.clockInside).toBe(true);
       expect(geometry.stripWidth).toBeGreaterThanOrEqual(144);
+      if (width > 840) await expect(page.locator(".evidence-disclosure")).toHaveAttribute("open", "");
+      else await expect(page.locator(".evidence-disclosure")).not.toHaveAttribute("open", "");
     }
 
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -203,9 +205,12 @@ test.describe("acceptance matrix", () => {
     await expect(page.getByText("Deletion secret · shown once")).toBeVisible();
     await expect(page.locator(".masthead")).toContainText("Aperture Hours");
     await expect(page.locator("textarea")).toHaveCount(2);
+    await expect(page.locator("footer")).toContainText("CC BY 4.0");
+    await expect(page.locator("footer")).toContainText("not a guarantee");
     await expect(page.locator("footer")).toContainText("Open-Meteo");
     await expect(page.getByRole("link", { name: "Report a problem" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+    expect(await page.locator("textarea").nth(0).evaluate((node) => node.scrollHeight - node.clientHeight)).toBeLessThanOrEqual(2);
     await page.screenshot({ path: path.join(captureRoot, "chromium-nojs-save-success-390.png"), fullPage: true });
     const shareUrl = await page.locator("textarea").nth(0).inputValue();
     const deletionSecret = await page.locator("textarea").nth(1).inputValue();

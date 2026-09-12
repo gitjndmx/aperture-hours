@@ -15,6 +15,8 @@
     "test:e2e": "playwright test",
     "audit:candidate": "node scripts/audit-candidate.mjs",
     "audit:reports": "node scripts/collect-audits.mjs",
+    "audit:plan": "node scripts/audit-plan.mjs",
+    "audit:release-clean": "node scripts/check-release-clean.mjs",
     "audit:deps": "pnpm audit --prod",
     "sbom": "node scripts/generate-sbom.mjs"
   },

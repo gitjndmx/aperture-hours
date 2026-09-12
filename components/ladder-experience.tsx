@@ -144,10 +144,18 @@ function WindowRow({ window, winner, marker }: { window: WindowReading; winner?:
 function HourlyEvidence({ forecast, date, winner }: { forecast: ForecastBundle; date: string; winner?: WindowReading }) {
   const day = forecast.days.find((candidate) => candidate.date === date)!;
   const inWinner = (time: string) => winner?.hours.some((hour) => hour.time === time) ?? false;
+  const disclosure = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const narrow = window.matchMedia("(max-width: 52.5rem)");
+    const synchronize = () => { if (disclosure.current) disclosure.current.open = !narrow.matches; };
+    synchronize();
+    narrow.addEventListener("change", synchronize);
+    return () => narrow.removeEventListener("change", synchronize);
+  }, []);
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
       <div className="section-heading"><p className="eyebrow">Forecast evidence</p><h2 id="evidence-title">The hours behind this</h2></div>
-      <details className="evidence-disclosure">
+      <details className="evidence-disclosure" ref={disclosure}>
         <summary>Read the 24 returned hours</summary>
       <div className="evidence-table-wrap">
         <table className="evidence-table">

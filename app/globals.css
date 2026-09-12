@@ -216,8 +216,7 @@ html.motion-on .activity-criteria[open] .criteria-copy { animation: reveal-in 16
 }
 .window-strip::after { content: ""; position: absolute; inset: 0 calc(100% - var(--cloud)) 0 0; border-right: 2px solid var(--oxide); background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--ground) 52%, transparent) 6px 12px); }
 .now-marker { position: absolute; z-index: 3; inset-block: 0; left: var(--now); width: 2px; background: var(--slate); transform: translateX(-1px); }
-.now-label { position: absolute; z-index: 4; top: .2rem; left: calc(var(--now) + .35rem); max-width: calc(100% - var(--now) - .7rem); padding: .08rem .2rem; overflow: hidden; background: var(--ground); color: var(--slate); font: .54rem var(--mono); line-height: 1.2; text-overflow: clip; white-space: nowrap; }
-.now-label[data-edge="right"] { right: calc(100% - var(--now) + .35rem); left: auto; max-width: calc(var(--now) - .7rem); }
+.now-label { position: absolute; z-index: 4; top: .2rem; right: .35rem; left: .35rem; padding: .08rem .2rem; overflow: hidden; background: var(--ground); color: var(--slate); font: .54rem var(--mono); line-height: 1.2; text-align: center; text-overflow: clip; white-space: nowrap; }
 .strip-text { position: absolute; z-index: 2; right: .4rem; bottom: .25rem; font: .6rem var(--mono); color: var(--ground); text-shadow: 0 1px 2px var(--ink); }
 .mini-means { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 1rem 0 0; background: var(--rule); border-block: 1px solid var(--rule); }
 .mini-means > div { background: var(--ground); padding: .75rem; }

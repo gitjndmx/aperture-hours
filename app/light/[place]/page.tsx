@@ -45,7 +45,7 @@ export default async function LightPage({ searchParams }: { params: Promise<{ pl
     }
   } catch (cause) {
     const kind = cause instanceof UpstreamError ? cause.kind : "upstream";
-    const title = kind === "timeout" ? "The request took too long and was stopped." : kind === "oversize" ? "The forecast response was larger than expected and was rejected." : "Open-Meteo did not respond in time.";
+    const title = kind === "timeout" ? "The request took too long and was stopped." : kind === "oversize" ? "The forecast response was larger than expected and was rejected." : "Open-Meteo did not return a usable response.";
     return <section className="route-shell state-page"><p className="eyebrow">Live source unavailable</p><h1>{title}</h1><p>No values are shown because a complete response was not received. We do not fill gaps with estimates.</p><Link className="primary-button" href="/">Choose a city again</Link></section>;
   }
   const fallback = { date: forecast.days[0].date, activity: "portraits" as const, preference: "none" as const };

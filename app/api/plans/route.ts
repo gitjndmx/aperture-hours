@@ -21,7 +21,7 @@ function messageFor(reason: string) {
 }
 
 function documentShell(title: string, content: string) {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${title} — Aperture Hours</title><link rel="stylesheet" href="/api-response.css"></head><body><header class="masthead"><a class="wordmark" href="/">AH · Aperture Hours</a><nav aria-label="Primary"><a href="/method">Method</a><a href="/privacy">Privacy</a></nav></header><main>${content}</main><footer><p>Forecast source: Open-Meteo. Saved plans are public to anyone holding the link and become unavailable after 30 days.</p><p><a href="https://github.com/gitjndmx/aperture-hours/issues">Report a problem</a> · No account is required.</p></footer></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${title} — Aperture Hours</title><link rel="stylesheet" href="/api-response.css"></head><body><header class="masthead"><a class="wordmark" href="/">AH · Aperture Hours</a><nav aria-label="Primary"><a href="/method">Method</a><a href="/privacy">Privacy</a></nav></header><main>${content}</main><footer><p>Forecast data by <a href="https://open-meteo.com/" rel="license">Open-Meteo</a>, CC BY 4.0. Saved plans are public to anyone holding the link and become unavailable after 30 days.</p><p>Model output is not a guarantee, an exact-site measurement, or safety advice.</p><p><a href="https://github.com/gitjndmx/aperture-hours/issues">Report a problem</a> · No account is required.</p></footer></body></html>`;
 }
 
 async function readBoundedBody(request: NextRequest): Promise<ArrayBuffer | null> {
@@ -59,7 +59,7 @@ function responseFor(request: NextRequest, status: number, payload: Record<strin
   } else {
     const shareUrl = escapeHtml(String(payload.shareUrl));
     const secret = escapeHtml(String(payload.deletionSecret));
-    response = new NextResponse(documentShell("Plan saved", `<p class="eyebrow">Plan saved</p><h1>Keep both parts.</h1><p>Anyone with the share link can read this plan. The deletion secret is shown once in this response and is also held in this browser. It cannot be recovered or re-sent.</p><label>Share link<textarea readonly rows="2">${shareUrl}</textarea></label><label>Deletion secret · shown once<textarea readonly rows="3">${secret}</textarea></label><p><a class="button" href="${shareUrl}">Open saved plan</a></p>`), { status: 201, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+    response = new NextResponse(documentShell("Plan saved", `<p class="eyebrow">Plan saved</p><h1>Keep both parts.</h1><p>Anyone with the share link can read this plan. The deletion secret is shown once in this response and is also held in this browser. It cannot be recovered or re-sent.</p><label>Share link<textarea readonly rows="3">${shareUrl}</textarea></label><label>Deletion secret · shown once<textarea readonly rows="3">${secret}</textarea></label><p><a class="button" href="${shareUrl}">Open saved plan</a></p>`), { status: 201, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   }
   if (browserCookie) response.cookies.set(browserCookieName, browserCookie, { ...baseCookieOptions, path: "/", maxAge: 3_600 });
   return response;

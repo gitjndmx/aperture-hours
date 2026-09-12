@@ -29,7 +29,7 @@ const staticAudit = {
   phase,
   measuredAt: new Date().toISOString(),
   commands: staticChecks,
-  optimizedBuildVerifiedImmediatelyBeforeServerStart: true,
+  optimizedBuildVerifiedBeforeFinalAudits: true,
   expectedRoutes,
   missingRoutes,
   verdict: staticChecks.every((item) => item.status === "pass") && missingRoutes.length === 0 ? "pass" : "fail"
@@ -123,26 +123,36 @@ metadataAudit.verdict = metadataAudit.homeStatus === 200 && Boolean(metadataAudi
   && (phase !== "final" || metadataAudit.savedPlanAudited) ? "pass" : "fail";
 await writeFile(path.join(reportDir, "metadata-audit.json"), `${JSON.stringify(metadataAudit, null, 2)}\n`);
 
-const playwright = JSON.parse(await readFile(path.join(reportDir, "playwright-results.json"), "utf8"));
+const productionReportName = phase === "final" ? "production-playwright-results.json" : "playwright-results.json";
+const playwright = JSON.parse(await readFile(path.join(reportDir, productionReportName), "utf8"));
+const localFixturePlaywright = phase === "final"
+  ? JSON.parse(await readFile(path.join(reportDir, "playwright-results.json"), "utf8"))
+  : null;
 const captures = (await readdir(path.resolve(`../captures/${phase}`))).sort();
 const browserAudit = {
   phase,
   measuredAt: new Date().toISOString(),
+  evidenceSources: {
+    deployedApplication: productionReportName,
+    localNonProductionFixtureServer: localFixturePlaywright ? "playwright-results.json" : null
+  },
   playwright: playwright.stats,
+  localFixturePlaywright: localFixturePlaywright?.stats ?? null,
   responsiveWidths: [1440, 1280, 1160, 1159, 840, 839, 560, 559, 390, 320],
   contractCoverage: [
-    { contract: "live-data city disambiguation and reading", engines: ["Chromium", "Firefox", "WebKit"] },
-    { contract: "motion-on default despite OS preference and explicit complete motion-off", engines: ["Chromium", "Firefox", "WebKit"] },
-    { contract: "zero-window and no-JavaScript rendering", engines: ["Chromium", "Firefox", "WebKit"] },
-    { contract: "responsive boundaries, text containment and duplicate IDs", engines: ["Chromium", "Firefox", "WebKit"] },
-    { contract: "save, shared read, lost/retained deletion authority, deletion and true 404", engines: ["Chromium"], note: "Consequential write journey intentionally runs once." },
-    { contract: "keyboard focus, disclosure, announcement and axe scan", engines: ["Chromium"], note: "Focused interaction assertions run in the primary engine." },
-    { contract: "rejection classes, zero-write behavior, idempotency, caps and cookie attributes", engines: ["Chromium"], note: "Consequential storage boundary assertions run once." },
-    { contract: "metadata, contact continuity and no-JavaScript save success", engines: ["Chromium"], note: "Protocol and document assertions run in the primary engine." }
+    { contract: "live-data city disambiguation and reading", source: "deployed", engines: ["Chromium", "Firefox", "WebKit"] },
+    { contract: "motion-on default despite OS preference and explicit complete motion-off", source: "deployed", engines: ["Chromium", "Firefox", "WebKit"] },
+    { contract: "zero-window and no-JavaScript rendering", source: "localFixture", engines: ["Chromium", "Firefox", "WebKit"], note: "Synthetic polar-night injection is deliberately unreachable in production." },
+    { contract: "responsive boundaries, text containment and duplicate IDs", source: "deployed", engines: ["Chromium", "Firefox", "WebKit"] },
+    { contract: "save, shared read, lost/retained deletion authority, deletion and true 404", source: "deployed", engines: ["Chromium"], note: "Consequential write journey intentionally runs once." },
+    { contract: "keyboard focus, disclosure, announcement and axe scan", source: "deployed", engines: ["Chromium"], note: "Focused interaction assertions run in the primary engine." },
+    { contract: "rejection classes, zero-write behavior, idempotency, caps and cookie attributes", source: "deployed", engines: ["Chromium"], note: "Consequential storage boundary assertions run once." },
+    { contract: "metadata, contact continuity and no-JavaScript save success", source: "deployed", engines: ["Chromium"], note: "Protocol and document assertions run in the primary engine." }
   ],
   captures,
   physicalDeviceEvidence: { available: false, statement: "No physical device was connected; no physical-device result is fabricated." },
-  verdict: playwright.stats.unexpected === 0 && playwright.stats.flaky === 0 ? "pass" : "fail"
+  verdict: playwright.stats.unexpected === 0 && playwright.stats.flaky === 0
+    && (!localFixturePlaywright || (localFixturePlaywright.stats.unexpected === 0 && localFixturePlaywright.stats.flaky === 0)) ? "pass" : "fail"
 };
 await writeFile(path.join(reportDir, "browser-audit.json"), `${JSON.stringify(browserAudit, null, 2)}\n`);
 
